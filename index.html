@@ -1,0 +1,976 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GHOSTNET - Chat Criptografado</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        /* ESTILO MILITAR HACKER */
+        @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        :root {
+            --bg-primary: #0a0a0f;
+            --bg-secondary: #12121a;
+            --bg-tertiary: #1a1a2e;
+            --text-primary: #00ff41;
+            --text-secondary: #0aff9a;
+            --accent: #ff003c;
+            --accent-hover: #ff3366;
+            --border: #00ff41;
+            --success: #00ff41;
+            --warning: #ffcc00;
+            --danger: #ff003c;
+        }
+        
+        body {
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            font-family: 'Share Tech Mono', monospace;
+            overflow: hidden;
+            height: 100vh;
+        }
+        
+        /* Efeito Matrix Background */
+        .matrix-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            opacity: 0.05;
+            pointer-events: none;
+        }
+        
+        /* Terminal Header */
+        .terminal-header {
+            background: var(--bg-secondary);
+            border-bottom: 2px solid var(--border);
+            padding: 10px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 0 20px rgba(0, 255, 65, 0.1);
+        }
+        
+        .terminal-header .logo {
+            font-family: 'Orbitron', monospace;
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--text-primary);
+            text-shadow: 0 0 10px rgba(0, 255, 65, 0.5);
+        }
+        
+        .terminal-header .status {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--success);
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+        
+        /* Login Screen */
+        .login-screen {
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
+        }
+        
+        .login-card {
+            background: var(--bg-tertiary);
+            border: 2px solid var(--border);
+            border-radius: 15px;
+            padding: 40px;
+            width: 100%;
+            max-width: 400px;
+            box-shadow: 0 0 50px rgba(0, 255, 65, 0.1);
+        }
+        
+        .login-card h2 {
+            font-family: 'Orbitron', monospace;
+            text-align: center;
+            margin-bottom: 30px;
+            color: var(--text-primary);
+        }
+        
+        .login-card .form-control {
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+            color: var(--text-primary);
+            font-family: 'Share Tech Mono', monospace;
+            padding: 12px;
+            border-radius: 8px;
+        }
+        
+        .login-card .form-control:focus {
+            background: var(--bg-primary);
+            border-color: var(--text-secondary);
+            box-shadow: 0 0 15px rgba(0, 255, 65, 0.2);
+            color: var(--text-primary);
+        }
+        
+        .login-card .btn-primary {
+            background: transparent;
+            border: 2px solid var(--border);
+            color: var(--text-primary);
+            font-family: 'Orbitron', monospace;
+            font-weight: 700;
+            padding: 12px;
+            border-radius: 8px;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+        
+        .login-card .btn-primary:hover {
+            background: var(--border);
+            color: var(--bg-primary);
+            box-shadow: 0 0 30px rgba(0, 255, 65, 0.3);
+        }
+        
+        /* Chat Interface */
+        .chat-container {
+            display: flex;
+            height: calc(100vh - 60px);
+        }
+        
+        /* Sidebar */
+        .chat-sidebar {
+            width: 300px;
+            background: var(--bg-secondary);
+            border-right: 2px solid var(--border);
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .chat-sidebar .sidebar-header {
+            padding: 15px;
+            border-bottom: 1px solid rgba(0, 255, 65, 0.2);
+        }
+        
+        .chat-sidebar .search-box {
+            padding: 10px;
+        }
+        
+        .chat-sidebar .search-box input {
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+            color: var(--text-primary);
+            font-family: 'Share Tech Mono', monospace;
+            padding: 8px 12px;
+            border-radius: 20px;
+            width: 100%;
+        }
+        
+        .chat-sidebar .contacts-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 10px;
+        }
+        
+        .contact-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 1px solid transparent;
+        }
+        
+        .contact-item:hover {
+            background: rgba(0, 255, 65, 0.05);
+            border-color: rgba(0, 255, 65, 0.2);
+        }
+        
+        .contact-item.active {
+            background: rgba(0, 255, 65, 0.1);
+            border-color: var(--border);
+        }
+        
+        .contact-item .avatar {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            background: var(--bg-tertiary);
+            border: 2px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            font-family: 'Orbitron', monospace;
+        }
+        
+        .contact-item .info {
+            flex: 1;
+        }
+        
+        .contact-item .info .name {
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+        
+        .contact-item .info .status {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+        
+        .contact-item .online-indicator {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--success);
+        }
+        
+        .contact-item .offline-indicator {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--danger);
+        }
+        
+        /* Main Chat Area */
+        .chat-main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: var(--bg-primary);
+        }
+        
+        .chat-main .chat-header {
+            padding: 15px 20px;
+            border-bottom: 1px solid rgba(0, 255, 65, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .chat-main .chat-header .user-info h5 {
+            font-family: 'Orbitron', monospace;
+            margin: 0;
+        }
+        
+        .chat-main .chat-header .actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .chat-main .chat-header .actions button {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text-primary);
+            padding: 8px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 14px;
+        }
+        
+        .chat-main .chat-header .actions button:hover {
+            background: rgba(0, 255, 65, 0.1);
+        }
+        
+        /* Messages Area */
+        .messages-area {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .message {
+            max-width: 70%;
+            padding: 12px 18px;
+            border-radius: 15px;
+            position: relative;
+            animation: messageIn 0.3s ease;
+        }
+        
+        @keyframes messageIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .message.sent {
+            align-self: flex-end;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-bottom-right-radius: 5px;
+        }
+        
+        .message.received {
+            align-self: flex-start;
+            background: rgba(0, 255, 65, 0.05);
+            border: 1px solid rgba(0, 255, 65, 0.2);
+            border-bottom-left-radius: 5px;
+        }
+        
+        .message .content {
+            font-size: 14px;
+            line-height: 1.5;
+        }
+        
+        .message .time {
+            font-size: 11px;
+            color: var(--text-secondary);
+            margin-top: 5px;
+            text-align: right;
+        }
+        
+        .message .status-icon {
+            font-size: 12px;
+            margin-left: 5px;
+        }
+        
+        .message.system {
+            align-self: center;
+            background: transparent;
+            border: none;
+            font-size: 12px;
+            color: var(--text-secondary);
+            text-align: center;
+        }
+        
+        /* Typing Indicator */
+        .typing-indicator {
+            display: none;
+            padding: 10px 20px;
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+        
+        .typing-indicator.show {
+            display: block;
+        }
+        
+        /* Input Area */
+        .input-area {
+            padding: 15px 20px;
+            border-top: 1px solid rgba(0, 255, 65, 0.2);
+            background: var(--bg-secondary);
+        }
+        
+        .input-area .input-group {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        
+        .input-area .input-group input {
+            flex: 1;
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+            color: var(--text-primary);
+            font-family: 'Share Tech Mono', monospace;
+            padding: 12px 18px;
+            border-radius: 25px;
+            outline: none;
+            transition: all 0.3s;
+        }
+        
+        .input-area .input-group input:focus {
+            box-shadow: 0 0 20px rgba(0, 255, 65, 0.1);
+        }
+        
+        .input-area .input-group button {
+            background: transparent;
+            border: 2px solid var(--border);
+            color: var(--text-primary);
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+        
+        .input-area .input-group button:hover {
+            background: var(--border);
+            color: var(--bg-primary);
+        }
+        
+        .input-area .input-group button.danger {
+            border-color: var(--danger);
+            color: var(--danger);
+        }
+        
+        .input-area .input-group button.danger:hover {
+            background: var(--danger);
+            color: white;
+        }
+        
+        /* Security Panel */
+        .security-panel {
+            position: fixed;
+            bottom: 80px;
+            right: 20px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 15px;
+            width: 250px;
+            display: none;
+        }
+        
+        .security-panel.show {
+            display: block;
+        }
+        
+        .security-panel .item {
+            display: flex;
+            justify-content: space-between;
+            padding: 5px 0;
+            font-size: 12px;
+        }
+        
+        .security-panel .item .label {
+            color: var(--text-secondary);
+        }
+        
+        .security-panel .item .value {
+            color: var(--text-primary);
+        }
+        
+        .security-panel .item .value.secure {
+            color: var(--success);
+        }
+        
+        .security-panel .item .value.warning {
+            color: var(--warning);
+        }
+        
+        .security-panel .item .value.danger {
+            color: var(--danger);
+        }
+        
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 5px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: var(--bg-primary);
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 10px;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .chat-sidebar {
+                width: 100%;
+                position: fixed;
+                left: 0;
+                top: 60px;
+                bottom: 0;
+                z-index: 100;
+                transform: translateX(-100%);
+                transition: transform 0.3s;
+            }
+            
+            .chat-sidebar.show {
+                transform: translateX(0);
+            }
+            
+            .message {
+                max-width: 90%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Matrix Background -->
+    <canvas class="matrix-bg" id="matrixCanvas"></canvas>
+    
+    <!-- Login Screen -->
+    <div id="loginScreen" class="login-screen">
+        <div class="login-card">
+            <h2>🔐 GHOSTNET</h2>
+            <p class="text-center mb-4" style="color: var(--text-secondary); font-size: 14px;">
+                Sistema de Comunicação Criptografada
+            </p>
+            
+            <form id="loginForm">
+                <div class="mb-3">
+                    <label class="form-label">Codinome</label>
+                    <input type="text" class="form-control" id="loginCodinome" placeholder="Ex: Shadow_X" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Senha de Acesso</label>
+                    <input type="password" class="form-control" id="loginSenha" placeholder="••••••••" required>
+                </div>
+                <button type="submit" class="btn btn-primary w-100">
+                    <span id="loginBtnText">▶ ACESSAR SISTEMA</span>
+                    <span id="loginBtnLoading" style="display:none;">⏳ CONECTANDO...</span>
+                </button>
+            </form>
+            
+            <div class="text-center mt-3">
+                <button class="btn btn-link" onclick="registrar()" style="color: var(--text-secondary); text-decoration: none;">
+                    [ Gerar novo acesso ]
+                </button>
+            </div>
+            
+            <div class="text-center mt-2">
+                <small style="color: var(--text-secondary); font-size: 11px;">
+                    🔒 Conexão criptografada AES-256 + RSA-4096
+                </small>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Chat Interface -->
+    <div id="chatScreen" style="display:none;">
+        <!-- Terminal Header -->
+        <div class="terminal-header">
+            <div class="logo">
+                ⚡ GHOSTNET // SISTEMA SEGURO
+            </div>
+            <div class="status">
+                <span id="statusText" style="font-size: 12px;">CONECTADO</span>
+                <div class="status-dot" id="statusDot"></div>
+                <span id="userCodinome" style="font-size: 12px; color: var(--text-secondary);"></span>
+            </div>
+        </div>
+        
+        <div class="chat-container">
+            <!-- Sidebar -->
+            <div class="chat-sidebar" id="chatSidebar">
+                <div class="sidebar-header">
+                    <h6 style="font-family: 'Orbitron', monospace;">CONTATOS</h6>
+                    <small style="color: var(--text-secondary);" id="onlineCount">0 online</small>
+                </div>
+                
+                <div class="search-box">
+                    <input type="text" placeholder="🔍 Buscar operador..." onkeyup="filtrarContatos(this.value)">
+                </div>
+                
+                <div class="contacts-list" id="contactsList">
+                    <!-- Contatos serão carregados aqui -->
+                </div>
+            </div>
+            
+            <!-- Main Chat -->
+            <div class="chat-main">
+                <div class="chat-header">
+                    <div class="user-info">
+                        <h5 id="chatWith">SELECIONE UM CONTATO</h5>
+                        <small id="chatStatus" style="color: var(--text-secondary);">👤 Selecione um operador para iniciar</small>
+                    </div>
+                    <div class="actions">
+                        <button onclick="toggleSecurityPanel()" title="Painel de Segurança">
+                            🛡️
+                        </button>
+                        <button onclick="limparChat()" title="Limpar Chat">
+                            🗑️
+                        </button>
+                        <button onclick="sair()" title="Desconectar">
+                            🚪
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="messages-area" id="messagesArea">
+                    <div class="message system">
+                        🔒 Conexão segura estabelecida
+                    </div>
+                    <div class="message system">
+                        💬 Selecione um contato para iniciar a conversa
+                    </div>
+                </div>
+                
+                <div class="typing-indicator" id="typingIndicator">
+                    ⏳ Alguém está digitando...
+                </div>
+                
+                <div class="input-area">
+                    <div class="input-group">
+                        <input type="text" id="messageInput" placeholder="Digite sua mensagem..." 
+                               onkeypress="if(event.key === 'Enter') enviarMensagem()" autocomplete="off">
+                        <button onclick="enviarMensagem()" title="Enviar (Enter)">
+                            ➤
+                        </button>
+                        <button class="danger" onclick="autodestruir()" title="Autodestruir última mensagem">
+                            💣
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Security Panel -->
+    <div class="security-panel" id="securityPanel">
+        <h6 style="font-family: 'Orbitron', monospace; margin-bottom: 15px;">🛡️ SEGURANÇA</h6>
+        
+        <div class="item">
+            <span class="label">Criptografia</span>
+            <span class="value secure">AES-256</span>
+        </div>
+        <div class="item">
+            <span class="label">Conexão</span>
+            <span class="value secure">Segura</span>
+        </div>
+        <div class="item">
+            <span class="label">IP</span>
+            <span class="value" id="securityIP">Mascarado</span>
+        </div>
+        <div class="item">
+            <span class="label">Firewall</span>
+            <span class="value secure">Ativo</span>
+        </div>
+        <div class="item">
+            <span class="label">Anti-Keylogger</span>
+            <span class="value secure">Ativo</span>
+        </div>
+        <div class="item">
+            <span class="label">Modo Fantasma</span>
+            <span class="value secure">Ativado</span>
+        </div>
+    </div>
+    
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        // ============================================
+        // CONFIGURAÇÕES
+        // ============================================
+        
+        let socket = null;
+        let token = localStorage.getItem('ghostnet_token');
+        let usuarioAtual = null;
+        let contatoSelecionado = null;
+        let mensagensEnviadas = [];
+        
+        // ============================================
+        // MATRIX BACKGROUND
+        // ============================================
+        
+        const canvas = document.getElementById('matrixCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        
+        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$%&*';
+        const fontSize = 14;
+        const columns = canvas.width / fontSize;
+        const drops = Array(Math.floor(columns)).fill(1);
+        
+        function drawMatrix() {
+            ctx.fillStyle = 'rgba(10, 10, 15, 0.05)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            ctx.fillStyle = '#00ff41';
+            ctx.font = fontSize + 'px monospace';
+            
+            for (let i = 0; i < drops.length; i++) {
+                const text = chars[Math.floor(Math.random() * chars.length)];
+                ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+                
+                if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
+                    drops[i] = 0;
+                }
+                drops[i]++;
+            }
+        }
+        
+        setInterval(drawMatrix, 50);
+        
+        // ============================================
+        // AUTENTICAÇÃO
+        // ============================================
+        
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const codinome = document.getElementById('loginCodinome').value;
+            const senha = document.getElementById('loginSenha').value;
+            
+            document.getElementById('loginBtnText').style.display = 'none';
+            document.getElementById('loginBtnLoading').style.display = 'inline';
+            
+            try {
+                const response = await fetch('/api/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ codinome, senha })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    token = data.token;
+                    usuarioAtual = data.usuario;
+                    localStorage.setItem('ghostnet_token', token);
+                    localStorage.setItem('ghostnet_usuario', JSON.stringify(data.usuario));
+                    
+                    conectarSocket();
+                    mostrarChat();
+                } else {
+                    alert('❌ Acesso negado. Verifique suas credenciais.');
+                }
+                
+            } catch (error) {
+                alert('❌ Erro de conexão com o servidor');
+            } finally {
+                document.getElementById('loginBtnText').style.display = 'inline';
+                document.getElementById('loginBtnLoading').style.display = 'none';
+            }
+        });
+        
+        async function registrar() {
+            const senha = prompt('Digite uma senha (8+ caracteres):');
+            if (!senha || senha.length < 8) {
+                alert('Senha deve ter 8+ caracteres');
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/registrar', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ senha })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    alert(`
+                    ✅ ACESSO CRIADO!
+                    
+                    📛 Codinome: ${data.codinome}
+                    🔑 Token: ${data.token}
+                    
+                    ⚠️ GUARDE SUA CHAVE PRIVADA:
+                    ${data.chave_privada.substring(0, 50)}...
+                    
+                    Anote seu codinome e senha!
+                    `);
+                    
+                    document.getElementById('loginCodinome').value = data.codinome;
+                    document.getElementById('loginSenha').value = senha;
+                }
+                
+            } catch (error) {
+                alert('❌ Erro ao gerar acesso');
+            }
+        }
+        
+        // ============================================
+        // SOCKET CONNECTION
+        // ============================================
+        
+        function conectarSocket() {
+            socket = io({
+                auth: { token }
+            });
+            
+            socket.on('connect', () => {
+                console.log('✅ Conectado ao GhostNet');
+                document.getElementById('statusText').textContent = 'CONECTADO';
+                document.getElementById('statusDot').style.background = '#00ff41';
+            });
+            
+            socket.on('disconnect', () => {
+                console.log('❌ Desconectado');
+                document.getElementById('statusText').textContent = 'DESCONECTADO';
+                document.getElementById('statusDot').style.background = '#ff003c';
+            });
+            
+            socket.on('usuarios_online', (usuarios) => {
+                atualizarContatos(usuarios);
+                document.getElementById('onlineCount').textContent = `${usuarios.length} online`;
+            });
+            
+            socket.on('nova_mensagem', (data) => {
+                if (contatoSelecionado && data.remetenteId === contatoSelecionado.id) {
+                    adicionarMensagem(data, 'received');
+                }
+            });
+            
+            socket.on('mensagem_enviada', (data) => {
+                console.log('✅ Mensagem enviada:', data.hash);
+            });
+            
+            socket.on('mensagem_destruida', (data) => {
+                document.querySelectorAll(`[data-hash="${data.hash}"]`).forEach(el => {
+                    el.innerHTML = '<em style="color: var(--danger);">💥 MENSAGEM AUTODESTRUÍDA</em>';
+                });
+            });
+            
+            socket.on('erro', (data) => {
+                alert('❌ ' + data.mensagem);
+            });
+        }
+        
+        // ============================================
+        // CHAT FUNCTIONS
+        // ============================================
+        
+        function mostrarChat() {
+            document.getElementById('loginScreen').style.display = 'none';
+            document.getElementById('chatScreen').style.display = 'block';
+            document.getElementById('userCodinome').textContent = `[${usuarioAtual.codinome}]`;
+            
+            if (!socket) conectarSocket();
+        }
+        
+        function atualizarContatos(usuarios) {
+            const lista = document.getElementById('contactsList');
+            
+            lista.innerHTML = usuarios.map(u => `
+                <div class="contact-item ${contatoSelecionado && contatoSelecionado.id === u.id ? 'active' : ''}" 
+                     onclick="selecionarContato(${u.id}, '${u.codinome}', '${u.nivel}')">
+                    <div class="avatar">${u.codinome.charAt(0)}</div>
+                    <div class="info">
+                        <div class="name">${u.codinome}</div>
+                        <div class="status">${u.nivel} • Online</div>
+                    </div>
+                    <div class="online-indicator"></div>
+                </div>
+            `).join('');
+        }
+        
+        function selecionarContato(id, codinome, nivel) {
+            contatoSelecionado = { id, codinome, nivel };
+            
+            document.getElementById('chatWith').textContent = `📡 ${codinome}`;
+            document.getElementById('chatStatus').textContent = `🟢 Online • ${nivel}`;
+            
+            // Destacar na lista
+            document.querySelectorAll('.contact-item').forEach(el => el.classList.remove('active'));
+            event.currentTarget.classList.add('active');
+            
+            // Limpar área de mensagens
+            document.getElementById('messagesArea').innerHTML = `
+                <div class="message system">🔒 Conexão segura com ${codinome}</div>
+            `;
+        }
+        
+        function enviarMensagem() {
+            const input = document.getElementById('messageInput');
+            const conteudo = input.value.trim();
+            
+            if (!conteudo || !contatoSelecionado) {
+                if (!contatoSelecionado) alert('Selecione um contato primeiro');
+                return;
+            }
+            
+            // Enviar via socket
+            socket.emit('mensagem_privada', {
+                destinatarioId: contatoSelecionado.id,
+                conteudo: conteudo
+            });
+            
+            // Mostrar na tela
+            adicionarMensagem({
+                conteudo: conteudo,
+                timestamp: Date.now()
+            }, 'sent');
+            
+            input.value = '';
+        }
+        
+        function adicionarMensagem(data, tipo) {
+            const area = document.getElementById('messagesArea');
+            const div = document.createElement('div');
+            div.className = `message ${tipo}`;
+            
+            const time = new Date(data.timestamp || Date.now()).toLocaleTimeString();
+            
+            div.innerHTML = `
+                <div class="content">${data.dados || data.conteudo}</div>
+                <div class="time">
+                    ${time}
+                    ${tipo === 'sent' ? '<span class="status-icon">✓✓</span>' : ''}
+                </div>
+            `;
+            
+            if (data.hash) {
+                div.dataset.hash = data.hash;
+            }
+            
+            area.appendChild(div);
+            area.scrollTop = area.scrollHeight;
+        }
+        
+        function autodestruir() {
+            const ultimaMensagem = document.querySelector('#messagesArea .message.sent:last-child');
+            if (ultimaMensagem && ultimaMensagem.dataset.hash) {
+                socket.emit('autodestruir_mensagem', { hash: ultimaMensagem.dataset.hash });
+            }
+        }
+        
+        function limparChat() {
+            document.getElementById('messagesArea').innerHTML = `
+                <div class="message system">🗑️ Chat limpo</div>
+            `;
+        }
+        
+        function filtrarContatos(busca) {
+            document.querySelectorAll('.contact-item').forEach(item => {
+                const nome = item.querySelector('.name').textContent.toLowerCase();
+                item.style.display = nome.includes(busca.toLowerCase()) ? 'flex' : 'none';
+            });
+        }
+        
+        function toggleSecurityPanel() {
+            document.getElementById('securityPanel').classList.toggle('show');
+        }
+        
+        function sair() {
+            if (confirm('Desconectar do GhostNet?')) {
+                localStorage.removeItem('ghostnet_token');
+                localStorage.removeItem('ghostnet_usuario');
+                
+                if (socket) socket.disconnect();
+                
+                document.getElementById('chatScreen').style.display = 'none';
+                document.getElementById('loginScreen').style.display = 'flex';
+            }
+        }
+        
+        // ============================================
+        // VERIFICAR SESSÃO
+        // ============================================
+        
+        if (token) {
+            try {
+                usuarioAtual = JSON.parse(localStorage.getItem('ghostnet_usuario'));
+                mostrarChat();
+            } catch (error) {
+                localStorage.removeItem('ghostnet_token');
+            }
+        }
+    </script>
+</body>
+</html>
+
