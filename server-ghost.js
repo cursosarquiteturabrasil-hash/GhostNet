@@ -129,7 +129,7 @@ const db = mysql.createConnection({
 db.connect(err => {
     if (err) {
         console.error('Erro banco:', err);
-        process.exit(1);
+        // Não mata o processo, tenta reconectar
     }
     console.log('✅ GhostNet Database conectado');
     
